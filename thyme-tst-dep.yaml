@@ -1,0 +1,37 @@
+#For k8s 1.7,apps/v1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thyme-tst
+  labels:
+    app: thyme-tst
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: thyme-tst 
+  template:
+    metadata:
+      labels:
+        app: thyme-tst
+    spec:
+      containers:
+      - name: thyme-tst
+        image: harbor.oyj.net/app/thyme-tst:1.0
+        imagePullPolicy: Always
+        env:
+        ports:
+        - containerPort: 8080
+          name: thyme-tst
+      imagePullSecrets:
+      #- name: ap-northeast-2-ecr-registry 
+      - name: harbor
+
+      #   volumeMounts:
+      #   - name: thyme-tst-persistent-storage
+      #     mountPath: /tmp
+
+      # volumes:
+      # - name: thyme-tst-persistent-storage
+      #   persistentVolumeClaim:
+      #     claimName: st-claim-for-thyme-tst-app
