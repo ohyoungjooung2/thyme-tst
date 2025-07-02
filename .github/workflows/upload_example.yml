@@ -1,49 +1,58 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: Java CI with Maven
+name: Maven Build and Upload to Azure Blob Storage
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - main # Trigger on pushes to the main branch
 
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
+  build-and-upload:
+    runs-on: ubuntu-latest # Use a Linux runner
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: maven
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      - name: Checkout code
+        uses: actions/checkout@v4 # Action to checkout your repository code
 
-    - name: ls jar
-      run: ls *
-  upload:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: bacongobbler/azure-blob-storage-upload@main
-       with:
-        source_dir: _dist
-        container_name: www
-        connection_string: ${{ secrets.ConnectionString }}
-        extra_args: '--pattern *.jar'
-        overwrite: 'true'
+      - name: Set up Java Development Kit (JDK)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17' # Specify your Java version (e.g., '11', '17', '21')
+          distribution: 'temurin' # Choose a JDK distribution (e.g., 'temurin', 'adopt')
+          cache: 'maven' # Cache Maven dependencies for faster builds
 
-    # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
-    # - name: Update dependency graph
-      # uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
+      - name: Build with Maven
+        run: mvn clean install -DskipTests # Build the project, skipping tests to speed up the workflow
+
+      - name: Find JAR file
+        id: find_jar
+        run: |
+          # Find the JAR file in the target directory.
+          # Assumes only one JAR is produced by the build.
+          JAR_FILE=$(find target -name "*.jar" -not -name "*javadoc.jar" -not -name "*sources.jar" | head -n 1)
+          if [ -z "$JAR_FILE" ]; then
+            echo "Error: No JAR file found in target directory!"
+            exit 1
+          fi
+          echo "Found JAR: $JAR_FILE"
+          echo "jar_path=$JAR_FILE" >> $GITHUB_OUTPUT # Set output variable for later steps
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }} # Use the Azure Service Principal credentials from GitHub Secrets
+
+      - name: Upload JAR to Azure Blob Storage
+        uses: azure/cli@v1 # Use the Azure CLI action to run az commands
+        with:
+          inlineScript: |
+            echo "Uploading ${{ steps.find_jar.outputs.jar_path }} to Azure Blob Storage..."
+            az storage blob upload \
+              --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} \
+              --container-name ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }} \
+              --file ${{ steps.find_jar.outputs.jar_path }} \
+              --name $(basename ${{ steps.find_jar.outputs.jar_path }}) \
+              --overwrite true # Overwrite if a blob with the same name already exists
+            echo "Successfully uploaded JAR to Azure Blob Storage."
+
+
+
