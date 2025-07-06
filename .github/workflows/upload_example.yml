@@ -44,7 +44,6 @@ jobs:
         run: mvn clean package
 
 
-
 #name: Maven Build and Upload to Azure Blob Storage
 #
 #on:
