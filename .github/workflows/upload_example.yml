@@ -31,7 +31,7 @@ jobs:
         with:
           distribution: jdkfile
           java-version: '17.0.10'
-          jdkfile: '/actions-runner/languages/java/17.0.10/microsoft-jdk-17.0.10-linux-x64.tar.gz'
+          jdkfile: '/actions-runner/languages/java/17.0.10/microsoft-jdk-17.0.15-linux-x64.tar.gz'
           overwrite-settings: false
           cache: maven
       # 해당 프로젝트에 맞는 Maven 버전.. 현재 runner서버 내부에 있는 maven파일의 path 지정 필요..cancel-timeout-minutes: 
