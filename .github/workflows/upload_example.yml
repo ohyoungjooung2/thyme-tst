@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build-and-push:
-    runs-on: [gradle-arc]
+    runs-on: [Linux]
     outputs:
       BINARY_NAME: ${{ steps.set_artifacts_info.outputs.BINARY_NAME }}
       ACCOUNT_NAME: ${{ steps.set_artifacts_info.outputs.ACCOUNT_NAME }}
