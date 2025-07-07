@@ -43,24 +43,24 @@ jobs:
       - name: Build with Maven
         run: mvn clean package; echo $?
 
-      - name: Parse Azure credentials (umi)
-        id: parse-credentials
+      
+
+
+      - name: Upload JAR to Azure Blob Storage
         run: |
-          echo "AZURE_CLEITN_ID=$(echo '${{ secrets.VM_AZURE_CREDENTIALS }}' | jq -r .clientId)" >> $GITHUB_ENV
-          echo "AZURE_TENANT_ID=$(echo '${{ secrets.VM_AZURE_CREDENTIALS }}' | jq -r .tenantId)" >> $GITHUB_ENV
-          echo "AZURE_SUBSCRIPTION_ID=$(echo '${{ secrets.VM_AZURE_CREDENTIALS }}' | jq -r .subscriptionId)" >> $GITHUB_ENV
-
-      - name: Azure Login
-        uses: azure/login@v2
-        env:
-          AZURE_LOGIN_PRE_CLEANUP: true
-        with:
-          client-id: ${{ env.AZURE_CLIENT_ID }}
-          tenant-id: ${{ env.AZURE_TENANT_ID }}
-          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
-        #tst login with only blob information
-
-
+         echo "Uploading JAR file..."
+         az storage blob upload \
+               --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+               --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
+               --container-name ${{ secrets.AZURE_CONTAINER_NAME }} \
+               --file target/your-app.jar \
+               --name your-app.jar
+         env:
+          AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+          AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
+     
+      - name: Done
+        run: echo "✅ JAR uploaded successfully!"
 #name: Maven Build and Upload to Azure Blob Storage
 #
 #on:
