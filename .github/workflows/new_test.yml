@@ -53,7 +53,7 @@ jobs:
                --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
                --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
                --container-name ${{ secrets.AZURE_CONTAINER_NAME }} \
-               --file target/your-app.jar \
+               --file target/demo-0.0.1-SNAPSHOT.jar \
                --name your-app.jar
          env:
           AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
