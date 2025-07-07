@@ -43,6 +43,22 @@ jobs:
       - name: Build with Maven
         run: mvn clean package; echo $?
 
+      - name: Parse Azure credentials (umi)
+        id: parse-credentials
+        run: |
+          echo "AZURE_CLEITN_ID=$(echo '${{ secrets.VM_AZURE_CREDENTIALS }}' | jq -r .clientId)" >> $GITHUB_ENV
+          echo "AZURE_TENANT_ID=$(echo '${{ secrets.VM_AZURE_CREDENTIALS }}' | jq -r .tenantId)" >> $GITHUB_ENV
+          echo "AZURE_SUBSCRIPTION_ID=$(echo '${{ secrets.VM_AZURE_CREDENTIALS }}' | jq -r .subscriptionId)" >> $GITHUB_ENV
+
+      - name: Azure Login
+        uses: azure/login@v2
+        env:
+          AZURE_LOGIN_PRE_CLEANUP: true
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
 
 #name: Maven Build and Upload to Azure Blob Storage
 #
