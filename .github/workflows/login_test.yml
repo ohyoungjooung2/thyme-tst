@@ -1,0 +1,24 @@
+name: Devops -azure login test
+
+# on:
+#   push:
+#     branches:
+#       - main
+#   workflow_dispatch:
+
+  jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Run a script that uses the access token
+        run: |
+          az account get-access-token --output table # Example: Get the access token from Azure
